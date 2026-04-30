@@ -2,27 +2,31 @@
 //
 
 #include <iostream>
+#include <vector>
+#include <numeric>
+#include <random>
 #include <omp.h>
-
-void test(int val)
-{
-#pragma omp parallel if (val)
-	if (omp_in_parallel())
-	{
-#pragma omp single
-		std::printf("val = %d\n", omp_get_num_threads());
-	}
-	else
-	{
-		std::printf("val = %d, serialized\n", val);
-	}
-}
 
 int main()
 {
-	omp_set_num_threads(2);
-	test(0);
-	test(2);
+	std::vector<int> A(20, 0);
+	std::vector<int> B(20, 0);
+	std::vector<int> C(20, 0);
+
+	std::iota(A.begin(), A.end(), 0);
+	std::iota(B.begin(), B.end(), 0);
+
+#pragma omp parallel for num_threads(4)
+	for (int i = 0; i < 20; ++i)
+	{
+		std::printf("Thread: %d, i: %d\n", omp_get_thread_num(), i);
+		C[i] = A[i] + B[i];
+	}
+
+	for (auto num : C)
+	{
+		std::cout << num << ' ';
+	}
 
 	return 0;
 }
