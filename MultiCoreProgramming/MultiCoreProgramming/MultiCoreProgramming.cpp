@@ -5,28 +5,29 @@
 #include <vector>
 #include <numeric>
 #include <random>
+#include <chrono>
+#include <thread>
 #include <omp.h>
 
 int main()
 {
-	std::vector<int> A(20, 0);
-	std::vector<int> B(20, 0);
-	std::vector<int> C(20, 0);
+	std::vector<int> re(4, 0);
+	int a{ 0 };
 
-	std::iota(A.begin(), A.end(), 0);
-	std::iota(B.begin(), B.end(), 0);
-
-#pragma omp parallel for num_threads(4)
-	for (int i = 0; i < 20; ++i)
+#pragma omp parallel for num_threads(4) private(a)
+	for (int i{ 0 }; i < 4; ++i)
 	{
-		std::printf("Thread: %d, i: %d\n", omp_get_thread_num(), i);
-		C[i] = A[i] + B[i];
+		a = i;
+		
+		// race condition을 주기 위한 sleep
+		std::this_thread::sleep_for(std::chrono::microseconds(10));
+
+		a = a * a;
+		re[i] = a;
 	}
 
-	for (auto num : C)
-	{
+	for (auto num : re)
 		std::cout << num << ' ';
-	}
 
 	return 0;
 }

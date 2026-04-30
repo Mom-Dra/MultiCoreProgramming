@@ -5,6 +5,8 @@
 #include <vector>
 #include <numeric>
 #include <random>
+#include <thread>
+#include <chrono>
 #include <omp.h>
 
 int solve()
@@ -27,6 +29,29 @@ int solve()
 	{
 		std::cout << num << ' ';
 	}
+
+	return 0;
+}
+
+int solve()
+{
+	std::vector<int> re(4, 0);
+	int a{ 0 };
+
+#pragma omp parallel for num_threads(4) private(a)
+	for (int i{ 0 }; i < 4; ++i)
+	{
+		a = i;
+
+		// race condition을 주기 위한 sleep
+		std::this_thread::sleep_for(std::chrono::microseconds(10));
+
+		a = a * a;
+		re[i] = a;
+	}
+
+	for (auto num : re)
+		std::cout << num << ' ';
 
 	return 0;
 }
