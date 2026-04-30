@@ -33,7 +33,7 @@ int solve()
 	return 0;
 }
 
-int solve()
+int solve2()
 {
 	std::vector<int> re(4, 0);
 	int a{ 0 };

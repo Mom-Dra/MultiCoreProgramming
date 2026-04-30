@@ -11,23 +11,18 @@
 
 int main()
 {
-	std::vector<int> re(4, 0);
-	int a{ 0 };
-
-#pragma omp parallel for num_threads(4) private(a)
-	for (int i{ 0 }; i < 4; ++i)
+	#pragma omp parallel num_threads(16)
 	{
-		a = i;
-		
-		// race condition을 주기 위한 sleep
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		#pragma omp sections
+		{
 
-		a = a * a;
-		re[i] = a;
+			#pragma omp section
+			std::printf("Section A, Thread: %d\n", omp_get_thread_num());
+
+			#pragma omp section
+			std::printf("Section B, Thread: %d\n", omp_get_thread_num());
+		}
 	}
-
-	for (auto num : re)
-		std::cout << num << ' ';
 
 	return 0;
 }
