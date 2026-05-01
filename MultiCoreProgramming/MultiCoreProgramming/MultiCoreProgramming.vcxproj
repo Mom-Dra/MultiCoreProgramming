@@ -128,8 +128,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClausesForScopeOfVar.cpp" />
     <ClCompile Include="Loop Construct.cpp" />
     <ClCompile Include="MultiCoreProgramming.cpp" />
+    <ClCompile Include="SectionsConstruct.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

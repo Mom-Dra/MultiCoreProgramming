@@ -11,18 +11,21 @@
 
 int main()
 {
-	#pragma omp parallel num_threads(16)
+	constexpr int numOfThreads{ 4 };
+	int priVal{ 100 };
+	int a{ 77 };
+
+#pragma omp parallel for num_threads(numOfThreads) shared(a), private(priVal)
+	for (int i{ 0 }; i < numOfThreads; ++i)
 	{
-		#pragma omp sections
-		{
+		priVal += i;
+		a += priVal;
 
-			#pragma omp section
-			std::printf("Section A, Thread: %d\n", omp_get_thread_num());
-
-			#pragma omp section
-			std::printf("Section B, Thread: %d\n", omp_get_thread_num());
-		}
+		std::printf("a: %d\n", a);
+		std::printf("priVal: %d\n", priVal);
 	}
+
+	std::cout << priVal;
 
 	return 0;
 }
