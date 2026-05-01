@@ -11,21 +11,20 @@
 
 int main()
 {
-	constexpr int numOfThreads{ 4 };
-	int priVal{ 100 };
-	int a{ 77 };
+	int tID{ 0 };
 
-#pragma omp parallel for num_threads(numOfThreads) shared(a), private(priVal)
-	for (int i{ 0 }; i < numOfThreads; ++i)
+#pragma omp parallel num_threads(4) private(tID)
 	{
-		priVal += i;
-		a += priVal;
+		tID = omp_get_thread_num();
 
-		std::printf("a: %d\n", a);
-		std::printf("priVal: %d\n", priVal);
+		if (tID % 2 == 0)
+			std::this_thread::sleep_for(std::chrono::microseconds(10));
+
+		std::printf("[%d] before\n", tID);
+		
+#pragma omp barrier
+		std::printf("[%d] after\n", tID);
 	}
-
-	std::cout << priVal;
 
 	return 0;
 }
