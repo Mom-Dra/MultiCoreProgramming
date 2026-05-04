@@ -119,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,9 +131,15 @@
   <ItemGroup>
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="ClausesForScopeOfVar.cpp" />
+    <ClCompile Include="DS_timer.cpp" />
     <ClCompile Include="Loop Construct.cpp" />
     <ClCompile Include="MultiCoreProgramming.cpp" />
+    <ClCompile Include="ProducerConsumer.cpp" />
     <ClCompile Include="SectionsConstruct.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DS_definitions.h" />
+    <ClInclude Include="DS_timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

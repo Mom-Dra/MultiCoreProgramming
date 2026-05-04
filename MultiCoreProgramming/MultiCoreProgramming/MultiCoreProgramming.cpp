@@ -3,28 +3,18 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include <numeric>
 #include <random>
 #include <chrono>
 #include <thread>
 #include <omp.h>
 
+#include "DS_timer.h"
+
 int main()
 {
-	int tID{ 0 };
 
-#pragma omp parallel num_threads(4) private(tID)
-	{
-		tID = omp_get_thread_num();
-
-		if (tID % 2 == 0)
-			std::this_thread::sleep_for(std::chrono::microseconds(10));
-
-		std::printf("[%d] before\n", tID);
-		
-#pragma omp barrier
-		std::printf("[%d] after\n", tID);
-	}
 
 	return 0;
 }
