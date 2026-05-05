@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
 #include <array>
@@ -17,7 +17,7 @@ inline double getArea(double a, double b, double h)
 	return h * (fx(a) + fx(b)) * 0.5;
 }
 
-int main(int argc, char* argv[])
+int TrapezoidalRule(int argc, char* argv[])
 {
 	constexpr int A{ -10 };
 	constexpr int B{ 10 };
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "Results are not matched\n";
 	}
-	
+
 
 	timer.printTimer();
 	EXIT_WIHT_KEYPRESS;

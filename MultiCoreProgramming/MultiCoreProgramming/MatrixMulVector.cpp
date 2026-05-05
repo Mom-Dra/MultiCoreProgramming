@@ -50,58 +50,6 @@ int MatrixMulVector(int argc, char* argv[])
 	}
 	timer.offTimer(1);
 
-
-	timer.onTimer(2);
-#pragma omp parallel for num_threads(2)
-	for (int i = 0; i < m; i++) {
-		Y_parallel[i] = 0.0;
-		for (int j = 0; j < n; j++) {
-			Y_parallel[i] += A[i][j] * X[j];
-		}
-	}
-	timer.offTimer(2);
-
-
-	timer.onTimer(3);
-#pragma omp parallel for num_threads(4)
-	for (int i = 0; i < m; i++) {
-		Y_parallel[i] = 0.0;
-		for (int j = 0; j < n; j++) {
-			Y_parallel[i] += A[i][j] * X[j];
-		}
-	}
-	timer.offTimer(3);
-
-	timer.onTimer(4);
-#pragma omp parallel for num_threads(8)
-	for (int i = 0; i < m; i++) {
-		Y_parallel[i] = 0.0;
-		for (int j = 0; j < n; j++) {
-			Y_parallel[i] += A[i][j] * X[j];
-		}
-	}
-	timer.offTimer(4);
-
-	timer.onTimer(5);
-#pragma omp parallel for num_threads(16)
-	for (int i = 0; i < m; i++) {
-		Y_parallel[i] = 0.0;
-		for (int j = 0; j < n; j++) {
-			Y_parallel[i] += A[i][j] * X[j];
-		}
-	}
-	timer.offTimer(5);
-
-	timer.onTimer(6);
-#pragma omp parallel for num_threads(32)
-	for (int i = 0; i < m; i++) {
-		Y_parallel[i] = 0.0;
-		for (int j = 0; j < n; j++) {
-			Y_parallel[i] += A[i][j] * X[j];
-		}
-	}
-	timer.offTimer(6);
-
 	// Check reulsts
 	LOOP_I(m) {
 		if (Y_serial[i] != Y_parallel[i]) {
