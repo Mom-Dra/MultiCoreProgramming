@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
 #include "DS_timer.h"
@@ -16,7 +16,7 @@ float Y_serial[m];
 float Y_parallel[m];
 float Y_myParallel[m];
 
-int main(int argc, char* argv[])
+int MatrixMulVector(int argc, char* argv[])
 {
 	DS_timer timer{ 7 };
 	timer.setTimerName(0, const_cast<char*>("Serial"));
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
 	// Parallel code
 	timer.onTimer(1);
-	#pragma omp parallel for num_threads(1)
+#pragma omp parallel for num_threads(1)
 	for (int i = 0; i < m; i++) {
 		Y_parallel[i] = 0.0;
 		for (int j = 0; j < n; j++) {
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	timer.offTimer(5);
-	
+
 	timer.onTimer(6);
 #pragma omp parallel for num_threads(32)
 	for (int i = 0; i < m; i++) {
@@ -125,6 +125,6 @@ void genRandomInput(void) {
 	LOOP_I(n)
 		X[i] = GenFloat;
 
-	memset(Y_serial, 0, sizeof(float)*m);
-	memset(Y_parallel, 0, sizeof(float)*m);
+	memset(Y_serial, 0, sizeof(float) * m);
+	memset(Y_parallel, 0, sizeof(float) * m);
 }
