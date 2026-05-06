@@ -133,11 +133,13 @@
     <ClCompile Include="Barrier.cpp" />
     <ClCompile Include="ClausesForScopeOfVar.cpp" />
     <ClCompile Include="DS_timer.cpp" />
+    <ClCompile Include="Histogram.cpp" />
     <ClCompile Include="Loop Construct.cpp" />
     <ClCompile Include="MatrixMulVector.cpp" />
     <ClCompile Include="MultiCoreProgramming.cpp" />
     <ClCompile Include="ProducerConsumer.cpp" />
     <ClCompile Include="SectionsConstruct.cpp" />
+    <ClCompile Include="TrapezoidalRule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DS_definitions.h" />

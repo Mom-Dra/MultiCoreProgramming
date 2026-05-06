@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
 #include <array>
@@ -6,7 +6,7 @@
 #include "DS_timer.h"
 #include "DS_definitions.h"
 
-int main(int argc, char* argv[])
+int histogram(int argc, char* argv[])
 {
 	DS_timer timer{ 7 };
 	timer.setTimerName(0, const_cast<char*>("Serial"));
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 	std::random_device rd;
 	std::default_random_engine gen{ rd() };
 	std::uniform_real_distribution<float> dist(0.0f, NumOfBins - 1);
-	
+
 	//std::array<float, Size* Size* Size> arr;
 	std::vector<float> arr(NumOfElement);
 	std::generate(arr.begin(), arr.end(), [&]() { return dist(gen); });
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
 	std::array<int, NumOfBins> bin4{};
 	std::array<std::array<int, NumOfBins>, NumOfThreads> localBins4{};
-	
+
 	timer.onTimer(3);
 #pragma omp parallel num_threads(NumOfThreads)
 	{
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 	timer.offTimer(4);
 
 	// Check reulsts
-	
+
 	for (int i{ 0 }; i < 10; ++i)
 	{
 		if (bin1[i] != bin2[i])

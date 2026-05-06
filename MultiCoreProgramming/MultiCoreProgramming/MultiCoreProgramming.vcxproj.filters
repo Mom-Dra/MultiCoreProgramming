@@ -39,6 +39,12 @@
     <ClCompile Include="MatrixMulVector.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="TrapezoidalRule.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Histogram.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DS_timer.h">
