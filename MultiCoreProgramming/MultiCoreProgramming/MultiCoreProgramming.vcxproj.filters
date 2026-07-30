@@ -64,5 +64,14 @@
     <CudaCompile Include="Vector Sum for a Large Vector.cu">
       <Filter>소스 파일</Filter>
     </CudaCompile>
+    <CudaCompile Include="MatrixMultiplication.cu">
+      <Filter>소스 파일</Filter>
+    </CudaCompile>
+    <CudaCompile Include="ThreadCounting.cu">
+      <Filter>소스 파일</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Stream.cu">
+      <Filter>소스 파일</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

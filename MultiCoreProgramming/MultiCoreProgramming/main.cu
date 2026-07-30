@@ -13,195 +13,246 @@
 #include <chrono>
 #include <omp.h>
 
-__global__ void matrixMultiplication(const float* A, const float* B, float* C, int m, int n, int k)
+//__global__ void myKernel(int* in, int* out)
+//{
+//	int tID{ blockDim.x * blockIdx.x + threadIdx.x };
+//	int temp{ 0 };
+//
+//	for (int i = 0; i < 250; ++i)
+//		temp = (temp + in[tID] * 5) % 10;
+//
+//	out[tID] = temp;
+//}
+
+void genRandomInput();
+
+inline double fx(double x)
 {
-	int col{ blockDim.x * blockIdx.x + threadIdx.x };
-	int row{ blockDim.y * blockIdx.y + threadIdx.y };
-	int index{ row * n + col };
-
-	if (row < m && col < n)
-	{
-		float val{ 0.0f };
-
-		for (int i{ 0 }; i < k; ++i)
-		{
-			val += A[row * k + i] * B[n * i + col];
-		}
-
-		C[index] = val;
-	}
+	return x * x;
 }
 
-__global__ void matrixMultiplicationWithSharedMemory(const float* A, const float* B, float* C, int m, int n, int k)
+//inline double fxDevice(double x)
+//{
+//	return x * x;
+//}
+
+inline double getArea(double a, double b, double h)
 {
-	constexpr int TileSize{ 16 };
+	return h * (fx(a) + fx(b)) * 0.5;
+}
 
-	__shared__ float sA[TileSize][TileSize];
-	__shared__ float sB[TileSize][TileSize];
+//__global__ inline double getAreaDevice(double a, double b, double h)
+//{
+//	return h * (fxDevice(a) + fxDevice(b)) * 0.5;
+//}
 
-	int col{ blockDim.x * blockIdx.x + threadIdx.x };
-	int row{ blockDim.y * blockIdx.y + threadIdx.y };
-	int index{ row * n + col };
 
-	int w{ ceil(static_cast<float>(k) / TileSize) };
+// sharedMemory localSum 버전
+//__global__ void getAreaKernel(int a, int b, double h, int size, double* area)
+//{
+//	int tID{ blockDim.x * blockIdx.x + threadIdx.x };
+//
+//	__shared__ double sArea;
+//	if (threadIdx.x == 0) sArea = 0.0;
+//	__syncthreads();
+//
+//	if (tID < size)
+//	{
+//		double myArea{ h * ((a + h * tID) * (a + h * tID) + (a + h * tID + h) * (a + h * tID + h)) * 0.5 };
+//
+//		atomicAdd(&sArea, myArea);
+//		__syncthreads();
+//
+//		if (threadIdx.x == 0)
+//			atomicAdd(area, sArea);
+//	}
+//}
 
-	float val{ 0.0f };
-	for (int t{ 0 }; t < w; ++t)
+// reduction 버전
+//__global__ void getAreaKernel(int a, int b, double h, int size, double* area)
+//{
+//	int tID{ blockDim.x * blockIdx.x + threadIdx.x };
+//
+//	__shared__ double sArea[256];
+//	sArea[threadIdx.x] = 0.0;
+//	__syncthreads();
+//
+//	double myArea{ 0.0 };
+//
+//	if (tID < size)
+//	{
+//		myArea = { h * ((a + h * tID) * (a + h * tID) + (a + h * tID + h) * (a + h * tID + h)) * 0.5 };
+//	}
+//
+//	sArea[threadIdx.x] = myArea;
+//	__syncthreads();
+//
+//	int offset{ 1 };
+//
+//	while (offset < 256)
+//	{
+//		if (threadIdx.x % (offset * 2) == 0)
+//			sArea[threadIdx.x] += sArea[threadIdx.x + offset];
+//
+//		__syncthreads();
+//		offset *= 2;
+//	}
+//
+//	if (threadIdx.x == 0)
+//		atomicAdd(area, sArea[0]);
+//}
+
+// Avoid Bank Conflict
+//__global__ void getAreaKernel(int a, int b, double h, int size, double* area)
+//{
+//	int tID{ blockDim.x * blockIdx.x + threadIdx.x };
+//
+//	__shared__ double sArea[256];
+//	sArea[threadIdx.x] = 0.0;
+//	__syncthreads();
+//
+//	double myArea{ 0.0 };
+//
+//	if (tID < size)
+//	{
+//		myArea = { h * ((a + h * tID) * (a + h * tID) + (a + h * tID + h) * (a + h * tID + h)) * 0.5 };
+//	}
+//
+//	sArea[threadIdx.x] = myArea;
+//	__syncthreads();
+//
+//	int offset{ 256 / 2 };
+//
+//	while (offset > 0)
+//	{
+//		if (threadIdx.x < offset)
+//			sArea[threadIdx.x] += sArea[threadIdx.x + offset];
+//
+//		__syncthreads();
+//		offset /= 2;
+//	}
+//
+//	if (threadIdx.x == 0)
+//		atomicAdd(area, sArea[0]);
+//}
+
+__global__ void getAreaKernel(int a, int b, double h, int size, double* area)
+{
+	int tID{ blockDim.x * blockIdx.x + threadIdx.x };
+
+	__shared__ double sArea[256];
+	sArea[threadIdx.x] = 0.0;
+	__syncthreads();
+
+	double myArea{ 0.0 };
+
+	if (tID < size)
 	{
-		if (row < m && (t * TileSize + threadIdx.x) < k)
-			sA[threadIdx.y][threadIdx.x] = A[row * k + t * TileSize + threadIdx.x];
-		else sA[threadIdx.y][threadIdx.x] = 0.0f;
+		myArea = { h * ((a + h * tID) * (a + h * tID) + (a + h * tID + h) * (a + h * tID + h)) * 0.5 };
+	}
 
-		if (col < n && (t * TileSize + threadIdx.y) < k)
-			sB[threadIdx.y][threadIdx.x] = B[(threadIdx.y + t * TileSize) * n + col];
-		else sB[threadIdx.y][threadIdx.x] = 0.0f;
+	sArea[threadIdx.x] = myArea;
+	__syncthreads();
+
+	int offset{ 256 / 2 };
+
+	while (offset > 0)
+	{
+		if (threadIdx.x < offset)
+			sArea[threadIdx.x] += sArea[threadIdx.x + offset];
 
 		__syncthreads();
-
-		for (int i{ 0 }; i < TileSize; ++i)
-		{
-			val += sA[threadIdx.y][i] * sB[i][threadIdx.x];
-		}
-
-		__syncthreads();
+		offset /= 2;
 	}
 
-	if (row < m && col < n)
-		C[index] = val;
+	if (threadIdx.x == 0)
+		atomicAdd(area, sArea[0]);
 }
 
-std::vector<float> MulOpenMP(const std::vector<float>& A, const std::vector<float>& B, int m, int n, int k)
+int TrapezoidalRule()
 {
-	std::vector<float> C(m * n, 0.0f);
+	constexpr int A{ -10 };
+	constexpr int B{ 10 };
+	constexpr int N{ 1024 * 1024 * 1024 };
 
-#pragma omp parallel for
-	for (int i{ 0 }; i < m; ++i)
-	{
-		for (int c{ 0 }; c < n; ++c)
-		{
-			float val{ 0.0f };
-
-			for (int j{ 0 }; j < k; ++j)
-			{
-				val += A[i * k + j] * B[j * n + c];
-			}
-
-			C[i * n + c] = val;
-		}
-	}
-
-	return C;
-}
-
-std::vector<float> MulSequential(const std::vector<float>& A, const std::vector<float>& B, int m, int n, int k) {
-	std::vector<float> C(m * n, 0.0f);
-	
-	for (size_t i{ 0 }; i < m; ++i)
-	{
-		for (size_t c{ 0 }; c < n; ++c)
-		{
-			float val{ 0.0f };
-
-			for (size_t j{ 0 }; j < k; ++j)
-			{
-				val += A[i * k + j] * B[j * n + c];
-			}
-
-			C[i * n + c] = val;
-		}
-	}
-
-	return C;
-}
-
-bool checkMatrix(const std::vector<float>& C1, const std::vector<float>& C2)
-{
-	for (size_t i{ 0 }; i < C1.size(); ++i)
-	{
-		if (C1[i] != C2[i]) return false;
-	}
-
-	return true;
-}
-
-int main()
-{
 	DS_timer timer{ 7 };
 	timer.setTimerName(0, const_cast<char*>("Serial"));
-	timer.setTimerName(1, const_cast<char*>("Parallel"));
-	timer.setTimerName(2, const_cast<char*>("CUDA Host -> Device"));
-	timer.setTimerName(3, const_cast<char*>("CUDA Device"));
-	timer.setTimerName(4, const_cast<char*>("CUDA Device -> Host"));
-	timer.setTimerName(5, const_cast<char*>("CUDA Device with Shared Memory"));
+	timer.setTimerName(1, const_cast<char*>("Parallel 1"));
+	timer.setTimerName(2, const_cast<char*>("CUDA"));
+	timer.setTimerName(3, const_cast<char*>("Parallel 4"));
+	timer.setTimerName(4, const_cast<char*>("Parallel 8"));
+	timer.setTimerName(5, const_cast<char*>("Parallel 16"));
+	timer.setTimerName(6, const_cast<char*>("Parallel 32"));
 
-	constexpr int m{ 1024 };
-	constexpr int n{ 2048 };
-	constexpr int k{ 512 };
+	genRandomInput();
 
-	std::vector<float> A(m * k, 1);
-	std::vector<float> B(k * n, 2);
-	std::vector<float> C(m * n, 0);
-
+	// Serial code
 	timer.onTimer(0);
-	std::vector<float> C1{ MulSequential(A, B, m, n, k) };
+
+	double areaS{ 0.0 };
+	double step{ static_cast<double>(B - A) / N };
+
+	for (int i{ 0 }; i < N; ++i)
+	{
+		areaS += getArea(A + step * i, A + step * (i + 1), step);
+	}
+
 	timer.offTimer(0);
 
+	std::cout << "Serial: " << areaS << '\n';
+
+
+	// Parallel code
 	timer.onTimer(1);
-	std::vector<float> C2{ MulOpenMP(A, B, m, n, k) };
+	constexpr int numOfThreads{ 8 };
+	double areaP{ 0.0 };
+#pragma omp parallel num_threads(numOfThreads) reduction(+:areaP)
+	{
+		int tID{ omp_get_thread_num() };
+
+#pragma omp for
+		for (int i{ 0 }; i < N; ++i)
+		{
+			areaP += getArea(A + step * i, A + step * (i + 1), step);
+		}
+	}
+
 	timer.offTimer(1);
 
-	bool check{ checkMatrix(C1, C2) };
+	std::cout << "Parallel: " << areaP << '\n';
 
-	if (!check) std::cout << "is not same!\n";
-	else std::cout << "same!\n";
+	// CUDA
+	constexpr int CUDA_N{ 1024 * 1024 * 1024 };
+	int blockSize{ 256 };
+	int gridSize{ static_cast<int>(ceilf(static_cast<float>(CUDA_N) / blockSize)) };
 
-	// 여기다 CUDA 프로그래밍 해보자
-	// 스레드를 m x n개!
+	//int* a, * b;
+	double* area;
+	double Area;
+	double hH{ static_cast<double>(B - A) / CUDA_N };
 
-	dim3 block{ 16, 16 };
-	dim3 grid{ static_cast<uint32_t> (ceil(static_cast<float>(n) / block.x)), static_cast<uint32_t>(ceil(static_cast<float>(m) / block.y)) };
-
-	float* dA, * dB, * dC;
+	cudaMalloc(&area, sizeof(double));
 
 	timer.onTimer(2);
-	cudaMalloc(&dA, m * k * sizeof(float));
-	cudaMalloc(&dB, k * n * sizeof(float));
-	cudaMalloc(&dC, m * n * sizeof(float));
-
-	cudaMemcpy(dA, A.data(), m * k * sizeof(float), cudaMemcpyHostToDevice);
-	cudaMemcpy(dB, B.data(), k * n * sizeof(float), cudaMemcpyHostToDevice);
-	cudaMemcpy(dC, C.data(), m * n * sizeof(float), cudaMemcpyHostToDevice);
+	getAreaKernel << <gridSize, blockSize >> > (A, B, hH, CUDA_N, area);
+	cudaDeviceSynchronize();
 	timer.offTimer(2);
 
-	timer.onTimer(3);
-	matrixMultiplication << <grid, block >> > (dA, dB, dC, m, n, k);
-	cudaDeviceSynchronize();
-	timer.offTimer(3);
+	cudaMemcpy(&Area, area, sizeof(double), cudaMemcpyDeviceToHost);
 
-	timer.onTimer(4);
-	cudaMemcpy(C2.data(), dC, m * n * sizeof(float), cudaMemcpyDeviceToHost);
-	timer.offTimer(4);
+	std::cout << "CUDA: " << Area << '\n';
 
-	check = checkMatrix(C1, C2);
-	if (!check) std::cout << "is not same!\n";
-	else std::cout << "same!\n";
-
-	
-	timer.onTimer(5);
-	matrixMultiplication << <grid, block >> > (dA, dB, dC, m, n, k);
-	cudaDeviceSynchronize();
-	timer.offTimer(5);
-
-	cudaMemcpy(C2.data(), dC, m * n * sizeof(float), cudaMemcpyDeviceToHost);
-	cudaFree(dA);
-	cudaFree(dB);
-	cudaFree(dC);
-
-	check = checkMatrix(C1, C2);
-	if (!check) std::cout << "is not same!\n";
-	else std::cout << "same!\n";
+	// Check reulsts
+	double tolerance = 1e-8;
+	if (std::abs(Area - areaS) > std::numeric_limits<double>::epsilon())
+	{
+		std::cout << "Results are not matched\n";
+	}
 
 	timer.printTimer();
+	EXIT_WIHT_KEYPRESS;
+}
 
-	return 0;
+int main() {
+	TrapezoidalRule();
 }

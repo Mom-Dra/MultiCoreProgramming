@@ -154,6 +154,9 @@
     <CudaCompile Include="main.cu">
       <FileType>Document</FileType>
     </CudaCompile>
+    <CudaCompile Include="MatrixMultiplication.cu" />
+    <CudaCompile Include="Stream.cu" />
+    <CudaCompile Include="ThreadCounting.cu" />
     <CudaCompile Include="Vector Sum for a Large Vector.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
