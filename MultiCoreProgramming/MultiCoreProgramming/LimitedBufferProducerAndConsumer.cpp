@@ -26,13 +26,16 @@ void producer(int id, std::queue<int>& jobQueue, size_t max_size, std::mutex& mt
 			{ return jobQueue.size() < max_size; });
 
 		jobQueue.push(data);
+
+		size_t size = jobQueue.size();
+
 		lock.unlock();
 
 		cv_not_empty.notify_one();
 
 		std::cout
 			<< "[생산자 " << id << "] 작업 등록: " << data
-			<< " (현재 큐 크기: " << jobQueue.size() << ")" << std::endl;
+			<< " (현재 큐 크기: " << size << ")" << std::endl;
 	}
 }
 
