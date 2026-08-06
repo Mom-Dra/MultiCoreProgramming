@@ -139,6 +139,7 @@
     <ClCompile Include="Deadlock.cpp" />
     <ClCompile Include="DS_timer.cpp" />
     <ClCompile Include="Histogram.cpp" />
+    <ClCompile Include="LimitedBufferProducerAndConsumer.cpp" />
     <ClCompile Include="Loop Construct.cpp" />
     <ClCompile Include="MatrixMulVector.cpp" />
     <ClCompile Include="MultiCoreProgramming.cpp" />
