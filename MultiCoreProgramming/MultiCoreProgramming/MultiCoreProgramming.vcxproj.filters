@@ -51,10 +51,22 @@
     <ClCompile Include="Deadlock.cpp">
       <Filter>소스 파일\CppThread</Filter>
     </ClCompile>
-    <ClCompile Include="ProducerConsumer.cpp">
+    <ClCompile Include="LimitedBufferProducerAndConsumer.cpp">
       <Filter>소스 파일\CppThread</Filter>
     </ClCompile>
-    <ClCompile Include="LimitedBufferProducerAndConsumer.cpp">
+    <ClCompile Include="ProducerConsumer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ProducerAndConsumer.cpp">
+      <Filter>소스 파일\CppThread</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryOrder.cpp">
+      <Filter>소스 파일\CppThread</Filter>
+    </ClCompile>
+    <ClCompile Include="Async.cpp">
+      <Filter>소스 파일\CppThread</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
       <Filter>소스 파일\CppThread</Filter>
     </ClCompile>
   </ItemGroup>

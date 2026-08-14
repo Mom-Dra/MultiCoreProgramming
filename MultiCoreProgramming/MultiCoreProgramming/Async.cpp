@@ -39,7 +39,7 @@ long long sum_range(int start, int end)
     return sum;
 }
 
-int main()
+int async()
 {
     std::cout << "=== Part 1: std::promise와 수동 예외 전파 [14, 15] ===" << std::endl;
     {

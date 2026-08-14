@@ -62,7 +62,7 @@ void consumer(int id, std::queue<int>& jobQueue, std::mutex& mtx, std::condition
 	}
 }
 
-int main()
+int limitedBuffer()
 {
 	std::queue<int> jobQueue;
 	std::mutex mtx;
